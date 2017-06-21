@@ -146,7 +146,7 @@ public class CameraActivity extends Fragment {
                   setFocusArea((int)event.getX(0), (int)event.getY(0), new Camera.AutoFocusCallback() {
                     public void onAutoFocus(boolean success, Camera camera) {
                       if (success) {
-                        takePicture(0, 0, 85);
+                        takePicture(0, 0, 85, false);
                       } else {
                         Log.d(TAG, "onTouch:" + " setFocusArea() did not suceed");
                       }
@@ -154,7 +154,7 @@ public class CameraActivity extends Fragment {
                   });
 
                 } else if(tapToTakePicture){
-                  takePicture(0, 0, 85);
+                  takePicture(0, 0, 85, false);
 
                 } else if(tapToFocus){
                   setFocusArea((int)event.getX(0), (int)event.getY(0), new Camera.AutoFocusCallback() {
@@ -404,7 +404,7 @@ public class CameraActivity extends Fragment {
     }
   };
 
-  private Camera.Size getOptimalPictureSize(final int width, final int height, final Camera.Size previewSize, final List<Camera.Size> supportedSizes){
+  private Camera.Size getOptimalPictureSize(final int width, final int height, final Camera.Size previewSize, final List<Camera.Size> supportedSizes, final boolean forceSize){
     /*
       get the supportedPictureSize that:
       - matches exactly width and height
@@ -413,6 +413,10 @@ public class CameraActivity extends Fragment {
       - has the highest supported picture width and height up to 2 Megapixel if width == 0 || height == 0
     */
     Camera.Size size = mCamera.new Size(width, height);
+
+    if(forceSize) {
+      return size;
+    }
 
     // convert to landscape if necessary
     if (size.width < size.height) {
@@ -472,7 +476,7 @@ public class CameraActivity extends Fragment {
     return size;
   }
 
-  public void takePicture(final int width, final int height, final int quality){
+  public void takePicture(final int width, final int height, final int quality, final boolean forceSize){
     Log.d(TAG, "CameraPreview takePicture width: " + width + ", height: " + height + ", quality: " + quality);
 
     if(mPreview != null) {
@@ -486,7 +490,7 @@ public class CameraActivity extends Fragment {
         public void run() {
           Camera.Parameters params = mCamera.getParameters();
 
-          Camera.Size size = getOptimalPictureSize(width, height, params.getPreviewSize(), params.getSupportedPictureSizes());
+          Camera.Size size = getOptimalPictureSize(width, height, params.getPreviewSize(), params.getSupportedPictureSizes(), forceSize);
           params.setPictureSize(size.width, size.height);
           currentQuality = quality;
 
